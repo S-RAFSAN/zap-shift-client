@@ -28,7 +28,7 @@ const Services = () => {
             title: "Cash on Delivery",
             description: "100% cash on delivery anywhere in Bangladesh with guaranteed safety of your product.",
             icon: "💰",
-            hoverClass: "hover:bg-orange-600"
+            hoverClass: "hover:bg-red-500"
         },
         {
             id: 5,
