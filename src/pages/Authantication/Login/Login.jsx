@@ -1,5 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { NavLink } from 'react-router';
+import SocialLogin from '../SocialLogin/SocialLogin';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
@@ -7,11 +9,12 @@ const Login = () => {
       console.log(data);
     };
     return (
+      <div>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="hero bg-base-200 min-h-screen">
-          <div className="hero-content flex-col lg:flex-row-reverse">
-            <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-              <div className="card-body">
+      <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+        <div className="card-body">
+          <fieldset className="fieldset">
+            <h1 className="text-3xl font-bold mb-4">Login to your account!</h1>
                 <fieldset className="fieldset">
                   <label className="label">Email</label>
                   <input
@@ -41,13 +44,19 @@ const Login = () => {
                   <div>
                     <a className="link link-hover">Forgot password?</a>
                   </div>
-                  <button className="btn btn-neutral mt-4">Login</button>
+                  <button className="btn btn-primary mt-4">Login</button>
                 </fieldset>
+            <div>
+              <p className="text-center">Don't have an account? <span className="text-primary link link-hover ml-2" ><NavLink to="/register">Register</NavLink></span></p>
               </div>
-            </div>
-          </div>
+              <SocialLogin />
+          </fieldset>
         </div>
+      </div>
+      
       </form>
+     
+      </div>
     );
 };
 
