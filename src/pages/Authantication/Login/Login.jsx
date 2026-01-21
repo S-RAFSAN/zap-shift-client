@@ -12,9 +12,9 @@ const Login = () => {
       <div>
       <form onSubmit={handleSubmit(onSubmit)}>
       <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-        <div className="card-body">
+        <div className="card-body p-4 sm:p-6">
           <fieldset className="fieldset">
-            <h1 className="text-3xl font-bold mb-4">Login to your account!</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-4">Login to your account!</h1>
                 <fieldset className="fieldset">
                   <label className="label">Email</label>
                   <input
