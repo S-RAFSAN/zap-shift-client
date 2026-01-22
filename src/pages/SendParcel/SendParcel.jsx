@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useLoaderData } from 'react-router';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
 
 const SendParcel = () => {
     const serviceCenters = useLoaderData() || [];
@@ -17,6 +18,8 @@ const SendParcel = () => {
             createdAt: ''
         }
     });
+
+    const axiosSecure = useAxiosSecure();
 
     const parcelType = watch('parcelType');
     const [senderSearchQuery, setSenderSearchQuery] = useState('');
@@ -226,41 +229,98 @@ const SendParcel = () => {
             width: '500px',
         }).then((result) => {
             if (result.isConfirmed) {
-                // Add parcel to the array
-                const updatedParcels = [...parcels, payload];
-                setParcels(updatedParcels);
-                
-                // Save to localStorage
-                localStorage.setItem('parcels', JSON.stringify(updatedParcels));
-                
-                // Log to console
-                console.log('All Parcels:', updatedParcels);
-                console.log('New Parcel Added:', payload);
-                
-                // Show success message with tracking ID
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Parcel Saved!',
-                    html: `
-                        <p>Your parcel has been saved successfully.</p>
-                        <p style="margin-top: 10px;"><strong>Tracking ID:</strong> ${payload.trackingID}</p>
-                    `,
-                    confirmButtonColor: '#C8E564',
-                });
+                // Save to backend API first
+                axiosSecure.post('/parcels', payload)
+                    .then(res => {
+                        // Get the inserted ID from MongoDB response
+                        const insertedId = res.data?.insertedId || res.data?._id || res.data?.id;
+                        
+                        // Log the full response and inserted ID
+                        console.log('Backend Response:', res.data);
+                        console.log('Inserted ID:', insertedId);
+                        
+                        // Update payload with database ID if available
+                        const finalPayload = insertedId ? { ...payload, _id: insertedId } : payload;
+                        
+                        // Add parcel to the array with database ID
+                        const updatedParcels = [...parcels, finalPayload];
+                        setParcels(updatedParcels);
+                        
+                        // Save to localStorage with database ID
+                        localStorage.setItem('parcels', JSON.stringify(updatedParcels));
+                        
+                        // Log to console
+                        console.log('All Parcels:', updatedParcels);
+                        console.log('New Parcel Added:', finalPayload);
+                        
+                        // Show success message with tracking ID and database ID
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Parcel Saved!',
+                            html: `
+                                <p>Your parcel has been saved successfully to the database.</p>
+                                <p style="margin-top: 10px;"><strong>Tracking ID:</strong> ${payload.trackingID}</p>
+                                ${insertedId ? `<p style="margin-top: 10px;"><strong>Database ID:</strong> ${insertedId}</p>` : ''}
+                            `,
+                            confirmButtonColor: '#C8E564',
+                        });
+                    })
+                    .catch(error => {
+                        // Backend save failed - save to localStorage as backup
+                        console.error('Error saving to backend:', error);
+                        console.error('Error details:', {
+                            message: error.message,
+                            code: error.code,
+                            response: error.response?.data,
+                            status: error.response?.status,
+                            config: {
+                                url: error.config?.url,
+                                baseURL: error.config?.baseURL,
+                                method: error.config?.method
+                            }
+                        });
+                        console.log('Saving to localStorage as backup...');
+                        
+                        // Add parcel to the array
+                        const updatedParcels = [...parcels, payload];
+                        setParcels(updatedParcels);
+                        
+                        // Save to localStorage
+                        localStorage.setItem('parcels', JSON.stringify(updatedParcels));
+                        
+                        // Log to console
+                        console.log('All Parcels (local only):', updatedParcels);
+                        console.log('New Parcel Added (local only):', payload);
+                        
+                        // Show warning message with error details
+                        const errorMessage = error.response?.data?.message || error.message || 'Unknown error';
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Saved Locally',
+                            html: `
+                                <p>Parcel saved to local storage only.</p>
+                                <p style="margin-top: 10px;"><strong>Tracking ID:</strong> ${payload.trackingID}</p>
+                                <p style="margin-top: 10px; font-size: 12px; color: #666;">Error: ${errorMessage}</p>
+                                <p style="margin-top: 5px; font-size: 11px; color: #999;">Check console for details.</p>
+                            `,
+                            confirmButtonColor: '#C8E564',
+                        });
+                    });
             }
         });
     };
 
     return (
-        <div className="min-h-screen py-6 sm:py-12 px-4 sm:px-6 bg-gray-50">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#03373D] mb-2">Add Parcel</h1>
-                    <p className="text-base sm:text-lg text-[#03373D]">Enter your parcel details</p>
-                </div>
+        <div className="min-h-[50vh] flex items-center justify-center p-4 sm:p-6 bg-base-200">
+            <div className="w-full max-w-7xl">
+                <div className="bg-base-200 rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 shadow-xl">
+                    {/* Header */}
+                    <div className="mb-6 sm:mb-8 text-center">
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Add Parcel</h1>
+                        <p className="text-base sm:text-lg text-base-content">Enter your parcel details</p>
+                    </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="rounded-lg shadow-lg p-4 sm:p-6 md:p-8">
+                    <form onSubmit={handleSubmit(onSubmit)} className="rounded-lg shadow-lg p-4 sm:p-6 md:p-8 bg-base-100">
                     {/* Hidden meta fields */}
                     <input type="hidden" {...register('creatorEmail')} />
                     <input type="hidden" {...register('createdAt')} />
@@ -274,7 +334,7 @@ const SendParcel = () => {
                                     {...register('parcelType', { required: true })}
                                     className="radio radio-success"
                                 />
-                                <span className="text-gray-700">Document</span>
+                                <span className="text-base-content">Document</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
@@ -283,7 +343,7 @@ const SendParcel = () => {
                                     {...register('parcelType', { required: true })}
                                     className="radio radio-success"
                                 />
-                                <span className="text-gray-700">Not-Document</span>
+                                <span className="text-base-content">Not-Document</span>
                             </label>
                         </div>
                     </div>
@@ -291,7 +351,7 @@ const SendParcel = () => {
                     {/* Parcel Details */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className="block text-sm font-semibold text-base-content mb-2">
                                 Parcel Name
                             </label>
                             <input
@@ -305,7 +365,7 @@ const SendParcel = () => {
                             )}
                         </div>
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className="block text-sm font-semibold text-base-content mb-2">
                                 Parcel Weight (KG)
                             </label>
                             <input
@@ -324,12 +384,12 @@ const SendParcel = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
                         {/* Sender Details */}
                         <div>
-                            <h2 className="text-xl sm:text-2xl font-bold text-[#03373D] mb-4 sm:mb-6">Sender Details</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-base-content mb-4 sm:mb-6">Sender Details</h2>
                             
                             <div className="space-y-3 sm:space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label className="block text-sm font-semibold text-base-content mb-2">
                                             Sender Name
                                         </label>
                                         <input
@@ -343,8 +403,8 @@ const SendParcel = () => {
                                         )}
                                     </div>
                                     <div className="md:col-span-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Sender Pickup Wire house
+                                        <label className="block text-sm font-semibold text-base-content mb-2">
+                                            Pickup Warehouse
                                         </label>
                                         <Controller
                                             name="senderWarehouse"
@@ -364,7 +424,7 @@ const SendParcel = () => {
                                                     <div className="relative w-full" ref={senderDropdownRef}>
                                                         <input
                                                             type="text"
-                                                            placeholder="Type to search warehouse..."
+                                                            placeholder="Search warehouse"
                                                             value={inputValue}
                                                             autoComplete="off"
                                                             onChange={(e) => {
@@ -396,7 +456,7 @@ const SendParcel = () => {
                                                                             </li>
                                                                         ))
                                                                     ) : (
-                                                                        <li className="p-4 text-gray-500 text-center">No warehouse found</li>
+                                                                        <li className="p-4 text-base-content/70 text-center">No warehouse found</li>
                                                                     )}
                                                                 </ul>
                                                             </div>
@@ -413,7 +473,7 @@ const SendParcel = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                     <div className="md:col-span-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label className="block text-sm font-semibold text-base-content mb-2">
                                             Address
                                         </label>
                                         <input
@@ -427,7 +487,7 @@ const SendParcel = () => {
                                         )}
                                     </div>
                                     <div className="md:col-span-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label className="block text-sm font-semibold text-base-content mb-2">
                                             Sender Contact No
                                         </label>
                                         <input
@@ -443,7 +503,7 @@ const SendParcel = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-base-content mb-2">
                                         Your Region
                                     </label>
                                     <select
@@ -464,7 +524,7 @@ const SendParcel = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-base-content mb-2">
                                         Pickup Instruction
                                     </label>
                                     <textarea
@@ -473,19 +533,19 @@ const SendParcel = () => {
                                         className="textarea textarea-bordered w-full bg-white text-black border-gray-300 placeholder:text-gray-400 placeholder:opacity-60 focus:outline-none focus:ring-0 focus:border-gray-400"
                                         rows="3"
                                     />
-                                    <p className="text-sm text-gray-500 mt-2">* PickUp Time 4pm-7pm Approx.</p>
+                                    <p className="text-sm text-base-content/70 mt-2">* PickUp Time 4pm-7pm Approx.</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Receiver Details */}
                         <div>
-                            <h2 className="text-xl sm:text-2xl font-bold text-[#03373D] mb-4 sm:mb-6">Receiver Details</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-base-content mb-4 sm:mb-6">Receiver Details</h2>
                             
                             <div className="space-y-3 sm:space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                     <div className="md:col-span-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label className="block text-sm font-semibold text-base-content mb-2">
                                             Receiver Name
                                         </label>
                                         <input
@@ -499,8 +559,8 @@ const SendParcel = () => {
                                         )}
                                     </div>
                                     <div className="md:col-span-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Receiver Delivery Wire house
+                                        <label className="block text-sm font-semibold text-base-content mb-2">
+                                            Delivery Warehouse
                                         </label>
                                         <Controller
                                             name="receiverWarehouse"
@@ -552,7 +612,7 @@ const SendParcel = () => {
                                                                             </li>
                                                                         ))
                                                                     ) : (
-                                                                        <li className="p-4 text-gray-500 text-center">No warehouse found</li>
+                                                                        <li className="p-4 text-base-content/70 text-center">No warehouse found</li>
                                                                     )}
                                                                 </ul>
                                                             </div>
@@ -569,7 +629,7 @@ const SendParcel = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                     <div className="md:col-span-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label className="block text-sm font-semibold text-base-content mb-2">
                                             Receiver Address
                                         </label>
                                         <input
@@ -583,7 +643,7 @@ const SendParcel = () => {
                                         )}
                                     </div>
                                     <div className="md:col-span-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label className="block text-sm font-semibold text-base-content mb-2">
                                             Receiver Contact No
                                         </label>
                                         <input
@@ -599,7 +659,7 @@ const SendParcel = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-base-content mb-2">
                                         Receiver Region
                                     </label>
                                     <select
@@ -619,7 +679,7 @@ const SendParcel = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-base-content mb-2">
                                         Delivery Instruction
                                     </label>
                                     <textarea
@@ -643,6 +703,7 @@ const SendParcel = () => {
                         </button>
                     </div>
                 </form>
+                </div>
             </div>
         </div>
     );
