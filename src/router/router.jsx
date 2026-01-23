@@ -7,6 +7,8 @@ import Register from "../pages/Authantication/Register/register";
 import Coverage from "../pages/Coverage/Coverage";
 import SendParcel from "../pages/SendParcel/SendParcel";
 import PrivateRoute from "../Routes/PrivateRoute";
+import DashboardLayout from "../layouts/DashboardLayout";
+import MyParcels from "../pages/Dashboard/MyParcels/MyParcels";
 
 export const router = createBrowserRouter([
   {
@@ -62,7 +64,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: 'myParcels',
-        Component: MyParcels,
+        element: <MyParcels />,
       },
     ],
   },
