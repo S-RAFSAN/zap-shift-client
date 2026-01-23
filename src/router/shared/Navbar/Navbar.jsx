@@ -6,12 +6,12 @@ import useAuth from '../../../hooks/useAuth';
 const Navbar = () => {
   const { user } = useAuth();
     const navItems = <>
-     <li><a><NavLink to="/">Home</NavLink></a></li>
-     <li><a><NavLink to="/about">About</NavLink></a></li>
-     <li><a><NavLink to="/coverage">Coverage</NavLink></a></li>
-     {user && <li><a><NavLink to="/dashboard">Dashboard</NavLink></a></li>}
-     <li><a><NavLink to="/send-parcel">Send Parcel</NavLink></a></li>
-     <li><a><NavLink to="/contact">Contact</NavLink></a></li>
+     <li><NavLink to="/">Home</NavLink></li>
+     <li><NavLink to="/about">About</NavLink></li>
+     <li><NavLink to="/coverage">Coverage</NavLink></li>
+     {user && <li><NavLink to="/dashboard/myParcels">Dashboard</NavLink></li>}
+     <li><NavLink to="/send-parcel">Send Parcel</NavLink></li>
+     <li><NavLink to="/contact">Contact</NavLink></li>
      
      </>
     return (

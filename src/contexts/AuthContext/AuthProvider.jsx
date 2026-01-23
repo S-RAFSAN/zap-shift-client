@@ -28,13 +28,21 @@ const AuthProvider = ({children}) => {
     }
 
     useEffect(() => {
-        const unSubscribe = onAuthStateChanged(auth, currentUser => {
-            setUser(currentUser);
-            console.log('user in the auth state changed',currentUser);
+        try {
+            const unSubscribe = onAuthStateChanged(auth, currentUser => {
+                setUser(currentUser);
+                console.log('user in the auth state changed',currentUser);
+                setLoading(false);
+            }, (error) => {
+                console.error('Auth state change error:', error);
+                setLoading(false);
+            });
+            return () => {
+                unSubscribe();
+            }
+        } catch (error) {
+            console.error('AuthProvider initialization error:', error);
             setLoading(false);
-        });
-        return () => {
-            unSubscribe();
         }
     },[])
     
@@ -50,8 +58,8 @@ const AuthProvider = ({children}) => {
     return (
         <AuthContext.Provider value={authInfo}>
             {children}
-                        </AuthContext.Provider>
-                    );
+        </AuthContext.Provider>
+    );
 };
 
 export default AuthProvider;

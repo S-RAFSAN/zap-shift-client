@@ -103,7 +103,6 @@ const MyParcels = () => {
             if (result.isConfirmed) {
                 try {
                     await axiosSecure.delete(`/parcels/${parcel._id || parcel.id}`);
-                    // Refetch parcels
                     queryClient.invalidateQueries({ queryKey: ['parcels', user?.email] });
                     Swal.fire(
                         'Deleted!',
@@ -112,11 +111,25 @@ const MyParcels = () => {
                     );
                 } catch (err) {
                     console.error('Delete error:', err);
-                    Swal.fire(
-                        'Error!',
-                        'Failed to delete parcel. Please try again.',
-                        'error'
-                    );
+                    const status = err?.response?.status;
+                    const msg = err?.response?.data?.error || err?.response?.data?.message || err?.message;
+
+                    // 404 = parcel not in DB (created elsewhere, already deleted, or wrong DB)
+                    if (status === 404) {
+                        queryClient.invalidateQueries({ queryKey: ['parcels', user?.email] });
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Parcel not found',
+                            text: msg || 'This parcel may have been deleted or does not exist in the database. The list has been refreshed.',
+                            confirmButtonColor: '#3085d6',
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: msg || 'Failed to delete parcel. Please try again.',
+                        });
+                    }
                 }
             }
         });
