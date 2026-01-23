@@ -10,14 +10,28 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 Aos.init();
 
-const queryClient = new QueryClient();
-createRoot(document.getElementById('root')).render(
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+const root = document.getElementById('root');
+if (!root) {
+  throw new Error('Root element not found');
+}
+
+createRoot(root).render(
   <StrictMode>
-   <div className='font-urbanist max-w-7xl mx-auto px-2 sm:px-4'>
-   <QueryClientProvider client={queryClient}>
-   <AuthProvider> 
-    <RouterProvider router={router} /></AuthProvider>
-   </QueryClientProvider>
-   </div>
+    <div className='font-urbanist'>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider> 
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </QueryClientProvider>
+    </div>
   </StrictMode>
 );
