@@ -9,8 +9,6 @@ import SendParcel from "../pages/SendParcel/SendParcel";
 import PrivateRoute from "../Routes/PrivateRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
 import MyParcels from "../pages/Dashboard/MyParcels/MyParcels";
-import AboutUs from "../pages/AboutUs/AboutUs";
-import Contact from "../pages/ContactUs/contact";
 
 export const router = createBrowserRouter([
   {
@@ -20,14 +18,6 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Home />,
-      },
-      {
-        path: "/about",
-        element: <AboutUs />,
-      },
-      {
-        path: "/contact",
-        element: <Contact />,
       },
       {
         path: "/coverage",
@@ -70,11 +60,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <DashboardLayout />,
+    element: <PrivateRoute><DashboardLayout /></PrivateRoute>,
     children: [
       {
         path: 'myParcels',
-        element: <MyParcels />,
+        Component: MyParcels,
       },
     ],
   },

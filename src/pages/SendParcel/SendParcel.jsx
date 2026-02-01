@@ -68,6 +68,21 @@ const SendParcel = () => {
     const senderDropdownRef = useRef(null);
     const receiverDropdownRef = useRef(null);
 
+    // Allow only integer (digit) input - blocks non-numeric keys
+    const handleIntegerKeyDown = (e) => {
+        if ([8, 9, 27, 13, 46].includes(e.keyCode)) return; // backspace, tab, escape, enter, delete
+        if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) return;
+        if ([35, 36, 37, 38, 39, 40].includes(e.keyCode)) return; // home, end, arrows
+        if (e.keyCode < 48 || e.keyCode > 57) e.preventDefault(); // block non-digits
+    };
+
+    // Sanitize pasted value to digits only
+    const handleIntegerPaste = (e, onChange) => {
+        e.preventDefault();
+        const pasted = (e.clipboardData?.getData('text') || '').replace(/\D/g, '');
+        if (pasted) onChange(pasted);
+    };
+
     // Keep creator email synced when user changes
     useEffect(() => {
         if (user?.email) {
@@ -370,8 +385,14 @@ const SendParcel = () => {
                             </label>
                             <input
                                 type="text"
-                                {...register('parcelWeight', { required: 'Parcel weight is required' })}
+                                inputMode="numeric"
+                                {...register('parcelWeight', {
+                                    required: 'Parcel weight is required',
+                                    pattern: { value: /^\d+$/, message: 'Enter whole numbers only' }
+                                })}
                                 placeholder="Parcel Weight"
+                                onKeyDown={handleIntegerKeyDown}
+                                onPaste={(e) => handleIntegerPaste(e, (val) => setValue('parcelWeight', val))}
                                 className="input input-bordered w-full bg-white text-black border-gray-300 placeholder:text-gray-400 placeholder:opacity-60 focus:outline-none focus:ring-0 focus:border-gray-400"
                             />
                             {errors.parcelWeight && (
@@ -491,9 +512,15 @@ const SendParcel = () => {
                                             Sender Contact No
                                         </label>
                                         <input
-                                            type="tel"
-                                            {...register('senderContact', { required: 'Contact number is required' })}
+                                            type="text"
+                                            inputMode="numeric"
+                                            {...register('senderContact', {
+                                                required: 'Contact number is required',
+                                                pattern: { value: /^\d+$/, message: 'Enter digits only' }
+                                            })}
                                             placeholder="Sender Contact No"
+                                            onKeyDown={handleIntegerKeyDown}
+                                            onPaste={(e) => handleIntegerPaste(e, (val) => setValue('senderContact', val))}
                                             className="input input-bordered w-full bg-white text-black border-gray-300 placeholder:text-gray-400 placeholder:opacity-60 focus:outline-none focus:ring-0 focus:border-gray-400"
                                         />
                                         {errors.senderContact && (
@@ -647,10 +674,16 @@ const SendParcel = () => {
                                             Receiver Contact No
                                         </label>
                                         <input
-                                            type="tel"
-                                            {...register('receiverContact', { required: 'Contact number is required' })}
+                                            type="text"
+                                            inputMode="numeric"
+                                            {...register('receiverContact', {
+                                                required: 'Contact number is required',
+                                                pattern: { value: /^\d+$/, message: 'Enter digits only' }
+                                            })}
                                             placeholder="Receiver Contact No"
-                                        className="input input-bordered w-full bg-white text-black border-gray-300 placeholder:text-gray-400 placeholder:opacity-60 focus:outline-none focus:ring-0 focus:border-gray-400"
+                                            onKeyDown={handleIntegerKeyDown}
+                                            onPaste={(e) => handleIntegerPaste(e, (val) => setValue('receiverContact', val))}
+                                            className="input input-bordered w-full bg-white text-black border-gray-300 placeholder:text-gray-400 placeholder:opacity-60 focus:outline-none focus:ring-0 focus:border-gray-400"
                                         />
                                         {errors.receiverContact && (
                                             <span className="text-red-500 text-sm">{errors.receiverContact.message}</span>
@@ -699,7 +732,7 @@ const SendParcel = () => {
                             type="submit"
                             className="btn bg-[#C8E564] text-[#03373D] hover:bg-[#b8d554] font-semibold px-6 sm:px-12 py-2 sm:py-3 rounded-lg w-full sm:w-auto text-sm sm:text-base"
                         >
-                            Proceed to Confirm Booking
+                            Confirm
                         </button>
                     </div>
                 </form>

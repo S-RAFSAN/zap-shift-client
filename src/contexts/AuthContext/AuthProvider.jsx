@@ -28,23 +28,25 @@ const AuthProvider = ({children}) => {
     }
 
     useEffect(() => {
-        try {
-            const unSubscribe = onAuthStateChanged(auth, currentUser => {
-                setUser(currentUser);
-                console.log('user in the auth state changed',currentUser);
-                setLoading(false);
-            }, (error) => {
-                console.error('Auth state change error:', error);
-                setLoading(false);
-            });
-            return () => {
-                unSubscribe();
+        const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                try {
+                    const token = await currentUser.getIdToken();
+                    localStorage.setItem('token', token);
+                } catch (err) {
+                    console.error('Failed to get auth token:', err);
+                    localStorage.removeItem('token');
+                }
+            } else {
+                localStorage.removeItem('token');
             }
-        } catch (error) {
-            console.error('AuthProvider initialization error:', error);
             setLoading(false);
-        }
-    },[])
+        });
+        return () => {
+            unSubscribe();
+        };
+    }, []);
     
 
     const authInfo = {
@@ -58,8 +60,8 @@ const AuthProvider = ({children}) => {
     return (
         <AuthContext.Provider value={authInfo}>
             {children}
-        </AuthContext.Provider>
-    );
+                        </AuthContext.Provider>
+                    );
 };
 
 export default AuthProvider;
