@@ -27,6 +27,9 @@ const MyParcels = () => {
 
   const parcels = allParcels.filter((p) => p.creatorEmail === user?.email);
 
+  const isPaid = (p) =>
+    p?.payment_status === "paid" || p?.paymentStatus === "paid";
+
   const deleteMutation = useMutation({
     mutationFn: (id) => axiosSecure.delete(`/parcels/${id}`),
     onSuccess: () => {
@@ -182,12 +185,12 @@ const MyParcels = () => {
                   <td>
                     <span
                       className={`badge font-medium ${
-                        parcel.paymentStatus === "paid"
+                        isPaid(parcel)
                           ? "badge-success bg-green-500"
                           : "badge-error bg-red-500"
                       }`}
                     >
-                      {parcel.paymentStatus === "paid" ? "Paid" : "Unpaid"}
+                      {isPaid(parcel) ? "Paid" : "Unpaid"}
                     </span>
                   </td>
                   <td className="text-right">
@@ -201,7 +204,7 @@ const MyParcels = () => {
                       </button>
                       <button
                         onClick={() => handlePay(parcel)}
-                        disabled={parcel.paymentStatus === "paid"}
+                        disabled={isPaid(parcel)}
                         className="btn btn-outline btn-success"
                         title="Mark as paid"
                       >
@@ -262,7 +265,7 @@ const MyParcels = () => {
               </p>
               <p>
                 <strong>Payment:</strong>{" "}
-                {selectedParcel.paymentStatus === "paid" ? "Paid" : "Unpaid"}
+                {isPaid(selectedParcel) ? "Paid" : "Unpaid"}
               </p>
               {selectedParcel.priceBreakdown?.length > 0 && (
                 <div>

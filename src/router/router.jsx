@@ -10,6 +10,8 @@ import PrivateRoute from "../Routes/PrivateRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
 import MyParcels from "../pages/Dashboard/MyParcels/MyParcels";
 import Payment from "../pages/Dashboard/Payment/payment";
+import PaymentHistory from "../pages/Dashboard/PaymentHistory/PaymentHistory";
+import TrackParcel from "../pages/Dashboard/TrackParcel/TrackParcel";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -23,7 +25,7 @@ export const router = createBrowserRouter([
         path: "/coverage",
         element: <Coverage />,
         loader: async () => {
-          const response = await fetch('/ServiceCenter.json');
+          const response = await fetch("/ServiceCenter.json");
           if (!response.ok) {
             return [];
           }
@@ -33,16 +35,28 @@ export const router = createBrowserRouter([
       },
       {
         path: "/send-parcel",
-        element: <PrivateRoute><SendParcel /></PrivateRoute>,
+        element: (
+          <PrivateRoute>
+            <SendParcel />
+          </PrivateRoute>
+        ),
         loader: async () => {
-          const response = await fetch('/ServiceCenter.json');
+          const response = await fetch("/ServiceCenter.json");
           if (!response.ok) {
             return [];
           }
           const data = await response.json();
           return data;
         },
-      }
+      },
+      {
+        path: "track",
+        element: <TrackParcel />,
+      },
+      {
+        path: "track/:trackingId",
+        element: <TrackParcel />,
+      },
     ],
   },
   {
@@ -60,15 +74,31 @@ export const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <PrivateRoute><DashboardLayout /></PrivateRoute>,
+    element: (
+      <PrivateRoute>
+        <DashboardLayout />
+      </PrivateRoute>
+    ),
     children: [
       {
-        path: 'myParcels',
-        Component: MyParcels,
+        path: "myParcels",
+        element: <MyParcels />,
       },
       {
-        path: 'payment/:parcelId',
+        path: "payment/:parcelId",
         element: <Payment />,
+      },
+      {
+        path: "paymentHistory",
+        element: <PaymentHistory />,
+      },
+      {
+        path: "track",
+        element: <TrackParcel />,
+      },
+      {
+        path: "track/:trackingId",
+        element: <TrackParcel />,
       },
     ],
   },

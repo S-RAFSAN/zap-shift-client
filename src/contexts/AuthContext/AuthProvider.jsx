@@ -34,8 +34,27 @@ const AuthProvider = ({children}) => {
                 try {
                     const token = await currentUser.getIdToken();
                     localStorage.setItem('token', token);
+                    // Sync user to backend users collection (role, profile) – works for email/password and social login
+                    const apiUrl = import.meta.env.VITE_API_URL ||
+                        (import.meta.env.MODE === 'development' ? 'http://localhost:5000' : 'https://zap-shift-server-taupe-six.vercel.app');
+                    const res = await fetch(`${apiUrl}/users`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            email: currentUser.email,
+                            displayName: currentUser.displayName ?? null,
+                            photoURL: currentUser.photoURL ?? null,
+                        }),
+                    });
+                    if (!res.ok) {
+                        const errBody = await res.text();
+                        console.error('User sync failed:', res.status, errBody);
+                    }
                 } catch (err) {
-                    console.error('Failed to get auth token:', err);
+                    console.error('Failed to get auth token or sync user:', err);
                     localStorage.removeItem('token');
                 }
             } else {

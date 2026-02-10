@@ -2,9 +2,11 @@ import React from "react";
 import { CardElement, useElements } from "@stripe/react-stripe-js";
 import { useStripe } from "@stripe/react-stripe-js";
 import { useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import useAuth from "../../../hooks/useAuth";
+import Swal from "sweetalert2";
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -33,6 +35,9 @@ const PaymentForm = () => {
   const [success, setSuccess] = useState(null);
   const [processing, setProcessing] = useState(false);
   const { parcelId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   console.log("parcelId from URL:", parcelId);
 
   const {
@@ -60,6 +65,9 @@ const PaymentForm = () => {
 
   const amount = parcelInfo?.price || 0;
 
+  const amountInCents = amount * 100;
+  console.log("amountInCents:", amountInCents);
+
   if (parcelLoading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
@@ -82,25 +90,102 @@ const PaymentForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    console.log("[Payment] handleSubmit called");
     setError(null);
     setSuccess(null);
-    if (!stripe || !elements) return;
+    if (!stripe || !elements) {
+      console.log("[Payment] stripe or elements missing, returning");
+      return;
+    }
 
     const card = elements.getElement(CardElement);
-    if (card === null) return;
+    if (card === null) {
+      console.log("[Payment] card element null, returning");
+      return;
+    }
 
     setProcessing(true);
-    const { error: stripeError, paymentMethod } =
-      await stripe.createPaymentMethod({
-        type: "card",
-        card,
-      });
-    setProcessing(false);
+    try {
+      const { error: stripeError, paymentMethod } =
+        await stripe.createPaymentMethod({
+          type: "card",
+          card,
+        });
 
-    if (stripeError) {
-      setError(stripeError.message || "Payment failed");
-    } else if (paymentMethod) {
-      setSuccess("Payment method added successfully!");
+      if (stripeError) {
+        setError(stripeError.message || "Payment failed");
+        setProcessing(false);
+        return;
+      }
+      console.log("[Payment] createPaymentMethod OK, calling backend...");
+      const res = await axiosSecure.post("/create-payment-intent", {
+        amount: amountInCents,
+        parcelId,
+      });
+
+      const clientSecret = res.data.clientSecret;
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            email: user.email,
+            name: user.displayName,
+          },
+        },
+      });
+      if (result.error) {
+        setError(result.error.message || "Payment failed");
+      } else {
+        setSuccess("Payment successful!");
+        const transactionId = result.paymentIntent?.id || "N/A";
+        const paymentData = {
+          amount: amountInCents,
+          parcelId,
+          paymentMethod: paymentMethod.id,
+          paymentStatus: "paid",
+          paymentDate: new Date().toISOString(),
+          paymentCurrency: "BDT",
+          creatorEmail: user?.email,
+          transactionId,
+        };
+        try {
+          await axiosSecure.post("/payments", paymentData);
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: ["parcel-info", parcelId],
+            }),
+            queryClient.invalidateQueries({ queryKey: ["all-parcels"] }),
+            queryClient.invalidateQueries({
+              queryKey: ["payments", user?.email],
+            }),
+          ]);
+        } catch (payErr) {
+          console.warn(
+            "Could not save payment record (backend may not have /payments):",
+            payErr?.response?.status
+          );
+        }
+        await Swal.fire({
+          icon: "success",
+          title: "Payment Successful",
+          html: `<p>Your payment has been completed.</p><p class="mt-3 font-semibold">Transaction ID: <span class="text-primary">${transactionId}</span></p>`,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#C8E564",
+        });
+        navigate("/dashboard/myParcels");
+      }
+      setProcessing(false);
+    } catch (err) {
+      console.error("Payment intent error:", err);
+      console.error("Response:", err?.response?.data);
+      setError(
+        err?.response?.data?.error ||
+          err?.response?.data?.message ||
+          err?.message ||
+          "Payment failed"
+      );
+    } finally {
+      setProcessing(false);
     }
   };
 
