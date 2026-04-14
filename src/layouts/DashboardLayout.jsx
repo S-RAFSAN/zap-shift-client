@@ -9,12 +9,19 @@ import {
   HiPaperAirplane,
   HiCreditCard,
   HiLocationMarker,
+  HiOutlineIdentification,
+  HiShieldCheck,
 } from "react-icons/hi";
+import useRole from "../hooks/useRole";
+import { RiEBike2Fill } from "react-icons/ri";
+import { GrTasks, GrTask } from "react-icons/gr";
+import { ImStatsBars } from "react-icons/im";
 
 const navLinkClass =
   "flex items-center gap-3 text-xl font-bold hover:text-[#c9eb65]";
 
 const DashboardLayout = () => {
+  const { role } = useRole();
   return (
     <div className="drawer lg:drawer-open">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
@@ -70,15 +77,65 @@ const DashboardLayout = () => {
             </NavLink>
           </li>
           <li className="mt-4">
-            <NavLink to="/coverage" className={navLinkClass}>
+            <NavLink to="/dashboard/coverage" className={navLinkClass}>
               <HiMap className="h-6 w-6 shrink-0" /> Coverage
             </NavLink>
           </li>
           <li className="mt-4">
-            <NavLink to="/send-parcel" className={navLinkClass}>
+            <NavLink to="/dashboard/sendParcel" className={navLinkClass}>
               <HiPaperAirplane className="h-6 w-6 shrink-0" /> Send Parcel
             </NavLink>
           </li>
+
+          {role === "rider" && (
+            <>
+              <li className="mt-4">
+                <NavLink
+                  to="/dashboard/AssignedDeliveries"
+                  className={navLinkClass}
+                >
+                  <GrTasks className="h-6 w-6 shrink-0" /> Assigned Deliveries
+                </NavLink>
+              </li>
+              <li className="mt-4">
+                <NavLink
+                  to="/dashboard/CompletedDeliveries"
+                  className={navLinkClass}
+                >
+                  <GrTask className="h-6 w-6 shrink-0" /> Completed Deliveries
+                </NavLink>
+              </li>
+            </>
+          )}
+
+          {role === "admin" && (
+            <>
+              <li className="mt-4">
+                <NavLink to="/dashboard/approveRiders" className={navLinkClass}>
+                  <HiOutlineIdentification className="h-6 w-6 shrink-0" />{" "}
+                  Approve Rider
+                </NavLink>
+              </li>
+              <li className="mt-4">
+                <NavLink
+                  to="/dashboard/UsersManagement"
+                  className={navLinkClass}
+                >
+                  <HiShieldCheck className="h-6 w-6 shrink-0" /> Admin Panel
+                </NavLink>
+              </li>
+              <li className="mt-4">
+                <NavLink to="/dashboard/assignRider" className={navLinkClass}>
+                  <RiEBike2Fill className="h-6 w-6 shrink-0" /> Assign Rider
+                </NavLink>
+              </li>
+              <li className="mt-4">
+                <NavLink to="/dashboard/AdminStats" className={navLinkClass}>
+                  <ImStatsBars className="h-6 w-6 shrink-0" /> Admin Stats
+                </NavLink>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </div>

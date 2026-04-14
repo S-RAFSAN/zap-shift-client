@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAuth from "../../../hooks/useAuth";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
+
 const MyParcels = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
@@ -161,6 +162,8 @@ const MyParcels = () => {
                 <th>Created At</th>
                 <th>Cost</th>
                 <th>Payment</th>
+                <th>Delivery Status</th>
+                <th>Tracking ID</th>
                 <th className="text-right">Actions</th>
               </tr>
             </thead>
@@ -177,7 +180,7 @@ const MyParcels = () => {
                     >
                       {parcel.parcelType === "document"
                         ? "Document"
-                        : "Non-Document"}
+                        : "Material "}
                     </span>
                   </td>
                   <td>{formatDate(parcel.createdAt)}</td>
@@ -192,6 +195,24 @@ const MyParcels = () => {
                     >
                       {isPaid(parcel) ? "Paid" : "Unpaid"}
                     </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        parcel.delivery_status === "delivered"
+                          ? "badge-success"
+                          : "badge-warning"
+                      }`}
+                    >
+                      {parcel.delivery_status === "delivered"
+                        ? "Delivered"
+                        : "Pending"}
+                    </span>
+                  </td>
+                  <td>
+                    
+                      <Link to={`/parcel-track/${parcel.trackingID}`}>{parcel.trackingID}</Link>
+                    
                   </td>
                   <td className="text-right">
                     <div className="flex gap-2 justify-end">
@@ -239,7 +260,7 @@ const MyParcels = () => {
                 <strong>Type:</strong>{" "}
                 {selectedParcel.parcelType === "document"
                   ? "Document"
-                  : "Non-Document"}
+                  : "Material "}
               </p>
               <p>
                 <strong>Parcel Name:</strong>{" "}

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:all": "concurrently \"npm run dev\" \"npm run start --prefix ../zap-shift-server\"",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev --prefix ../zap-shift-server\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -27,15 +27,16 @@
     "react-leaflet": "^5.0.0",
     "react-responsive-carousel": "^3.2.23",
     "react-router": "^7.9.4",
+    "recharts": "^3.8.1",
     "sweetalert2": "^11.26.17",
     "tailwindcss": "^4.1.15"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2",
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
+    "concurrently": "^9.1.2",
     "daisyui": "^5.3.7",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",

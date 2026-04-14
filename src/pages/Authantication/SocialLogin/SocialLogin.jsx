@@ -1,16 +1,24 @@
 import React from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import useAuth from '../../../hooks/useAuth';
+
 
 const SocialLogin = () => {
     const { signInWithGoogle } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from || '/';
     
     const handleSignInWithGoogle = () => {
         signInWithGoogle()
         .then(result => {
-            console.log(result.user);
+            console.log('Google sign-in successful:', result.user.email);
+            // Backend sync (PUT /users with upsert) is handled automatically
+            // by AuthProvider's onAuthStateChanged listener — no duplicate entries.
+            navigate(from);
         })
         .catch(error => {
-            console.log(error);
+            console.error('Google sign-in error:', error);
         });
     }
     

@@ -19,7 +19,7 @@ const SendParcel = () => {
   } = useForm({
     mode: "onChange",
     defaultValues: {
-      parcelType: "document",
+      parcelType: "material",
       senderWarehouse: "",
       receiverWarehouse: "",
       creatorEmail: "",
@@ -60,7 +60,7 @@ const SendParcel = () => {
       (center) =>
         center.district?.toLowerCase().includes(query) ||
         center.city?.toLowerCase().includes(query) ||
-        center.region?.toLowerCase().includes(query)
+        center.region?.toLowerCase().includes(query),
     );
   }, [serviceCenters, senderSearchQuery]);
 
@@ -71,7 +71,7 @@ const SendParcel = () => {
       (center) =>
         center.district?.toLowerCase().includes(query) ||
         center.city?.toLowerCase().includes(query) ||
-        center.region?.toLowerCase().includes(query)
+        center.region?.toLowerCase().includes(query),
     );
   }, [serviceCenters, receiverSearchQuery]);
 
@@ -144,16 +144,16 @@ const SendParcel = () => {
     parcelType,
     weight,
     senderWarehouse,
-    receiverWarehouse
+    receiverWarehouse,
   ) => {
     const weightNum = parseFloat(weight) || 0;
 
     // Get sender and receiver warehouse details
     const senderCenter = serviceCenters.find(
-      (c) => `${c.district}-${c.city}` === senderWarehouse
+      (c) => `${c.district}-${c.city}` === senderWarehouse,
     );
     const receiverCenter = serviceCenters.find(
-      (c) => `${c.district}-${c.city}` === receiverWarehouse
+      (c) => `${c.district}-${c.city}` === receiverWarehouse,
     );
 
     // Check if within same city
@@ -170,11 +170,11 @@ const SendParcel = () => {
       price = isWithinCity ? 60 : 80;
       breakdown.push(`Base price (Document): ৳${price}`);
     } else {
-      // Non-Document (parcelType === 'not-document')
+      // Material  (parcelType === 'material')
       if (weightNum <= 3) {
         // Up to 3kg: ৳110 within city, ৳150 outside
         price = isWithinCity ? 110 : 150;
-        breakdown.push(`Base price (Non-Document, ${weightNum}kg): ৳${price}`);
+        breakdown.push(`Base price (Material , ${weightNum}kg): ৳${price}`);
       } else {
         // Over 3kg: Base + ৳40/kg for additional weight
         const basePrice = isWithinCity ? 110 : 150;
@@ -183,21 +183,21 @@ const SendParcel = () => {
 
         if (isWithinCity) {
           price = basePrice + additionalCharge;
-          breakdown.push(`Base price (Non-Document, up to 3kg): ৳${basePrice}`);
+          breakdown.push(`Base price (Material , up to 3kg): ৳${basePrice}`);
           breakdown.push(
             `Additional weight (${additionalWeight.toFixed(
-              2
-            )}kg × ৳40): ৳${additionalCharge}`
+              2,
+            )}kg × ৳40): ৳${additionalCharge}`,
           );
         } else {
           // Outside city: +৳40 extra
           const extraCharge = 40;
           price = basePrice + additionalCharge + extraCharge;
-          breakdown.push(`Base price (Non-Document, up to 3kg): ৳${basePrice}`);
+          breakdown.push(`Base price (Material , up to 3kg): ৳${basePrice}`);
           breakdown.push(
             `Additional weight (${additionalWeight.toFixed(
-              2
-            )}kg × ৳40): ৳${additionalCharge}`
+              2,
+            )}kg × ৳40): ৳${additionalCharge}`,
           );
           breakdown.push(`Outside city extra charge: ৳${extraCharge}`);
         }
@@ -238,17 +238,17 @@ const SendParcel = () => {
 
     // Get warehouse details for display
     const senderCenter = serviceCenters.find(
-      (c) => `${c.district}-${c.city}` === senderWarehouse
+      (c) => `${c.district}-${c.city}` === senderWarehouse,
     );
     const receiverCenter = serviceCenters.find(
-      (c) => `${c.district}-${c.city}` === receiverWarehouse
+      (c) => `${c.district}-${c.city}` === receiverWarehouse,
     );
 
     const calculation = calculatePrice(
       parcelType,
       parcelWeight,
       senderWarehouse,
-      receiverWarehouse
+      receiverWarehouse,
     );
 
     const breakdownText = calculation.breakdown.join("\n");
@@ -274,7 +274,7 @@ const SendParcel = () => {
                 <div style="text-align: left; font-size: 14px;">
                     <p style="margin-bottom: 10px;"><strong>Parcel Details:</strong></p>
                     <p style="margin-bottom: 5px;">Type: ${
-                      parcelType === "document" ? "Document" : "Non-Document"
+                      parcelType === "document" ? "Document" : "Material "
                     }</p>
                     <p style="margin-bottom: 5px;">Weight: ${parcelWeight} kg</p>
                     <p style="margin-bottom: 5px;">Sender: ${
@@ -437,11 +437,11 @@ const SendParcel = () => {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
-                    value="not-document"
+                    value="material"
                     {...register("parcelType", { required: true })}
                     className="radio radio-success"
                   />
-                  <span className="text-base-content">Not-Document</span>
+                  <span className="text-base-content">Material</span>
                 </label>
               </div>
             </div>
@@ -484,7 +484,7 @@ const SendParcel = () => {
                   onKeyDown={handleIntegerKeyDown}
                   onPaste={(e) =>
                     handleIntegerPaste(e, (val) =>
-                      setValue("parcelWeight", val)
+                      setValue("parcelWeight", val),
                     )
                   }
                   className="input input-bordered w-full bg-white text-black border-gray-300 placeholder:text-gray-400 placeholder:opacity-60 focus:outline-none focus:ring-0 focus:border-gray-400"
@@ -538,7 +538,7 @@ const SendParcel = () => {
                             ? (() => {
                                 const center = serviceCenters.find(
                                   (c) =>
-                                    `${c.district}-${c.city}` === field.value
+                                    `${c.district}-${c.city}` === field.value,
                                 );
                                 return center
                                   ? getWarehouseDisplayName(center)
@@ -590,19 +590,19 @@ const SendParcel = () => {
                                                   field.onChange(warehouseId);
                                                   setSenderSearchQuery(
                                                     getWarehouseDisplayName(
-                                                      center
-                                                    )
+                                                      center,
+                                                    ),
                                                   );
                                                   setSenderDropdownOpen(false);
                                                 }}
                                                 className="text-black hover:bg-gray-100 py-2 px-4 cursor-pointer"
                                               >
                                                 {getWarehouseDisplayName(
-                                                  center
+                                                  center,
                                                 )}
                                               </a>
                                             </li>
-                                          )
+                                          ),
                                         )
                                       ) : (
                                         <li className="p-4 text-base-content/70 text-center">
@@ -661,7 +661,7 @@ const SendParcel = () => {
                         onKeyDown={handleIntegerKeyDown}
                         onPaste={(e) =>
                           handleIntegerPaste(e, (val) =>
-                            setValue("senderContact", val)
+                            setValue("senderContact", val),
                           )
                         }
                         className="input input-bordered w-full bg-white text-black border-gray-300 placeholder:text-gray-400 placeholder:opacity-60 focus:outline-none focus:ring-0 focus:border-gray-400"
@@ -756,7 +756,7 @@ const SendParcel = () => {
                             ? (() => {
                                 const center = serviceCenters.find(
                                   (c) =>
-                                    `${c.district}-${c.city}` === field.value
+                                    `${c.district}-${c.city}` === field.value,
                                 );
                                 return center
                                   ? getWarehouseDisplayName(center)
@@ -808,21 +808,21 @@ const SendParcel = () => {
                                                   field.onChange(warehouseId);
                                                   setReceiverSearchQuery(
                                                     getWarehouseDisplayName(
-                                                      center
-                                                    )
+                                                      center,
+                                                    ),
                                                   );
                                                   setReceiverDropdownOpen(
-                                                    false
+                                                    false,
                                                   );
                                                 }}
                                                 className="text-black hover:bg-gray-100 py-2 px-4 cursor-pointer"
                                               >
                                                 {getWarehouseDisplayName(
-                                                  center
+                                                  center,
                                                 )}
                                               </a>
                                             </li>
-                                          )
+                                          ),
                                         )
                                       ) : (
                                         <li className="p-4 text-base-content/70 text-center">
@@ -881,7 +881,7 @@ const SendParcel = () => {
                         onKeyDown={handleIntegerKeyDown}
                         onPaste={(e) =>
                           handleIntegerPaste(e, (val) =>
-                            setValue("receiverContact", val)
+                            setValue("receiverContact", val),
                           )
                         }
                         className="input input-bordered w-full bg-white text-black border-gray-300 placeholder:text-gray-400 placeholder:opacity-60 focus:outline-none focus:ring-0 focus:border-gray-400"

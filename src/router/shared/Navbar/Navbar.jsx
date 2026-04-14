@@ -9,6 +9,7 @@ import {
   HiViewGrid,
   HiPaperAirplane,
   HiLocationMarker,
+  HiOutlineIdentification,
 } from "react-icons/hi";
 
 const Navbar = () => {
@@ -26,16 +27,6 @@ const Navbar = () => {
           <HiHome className={iconClass} /> Home
         </NavLink>
       </li>
-      <li>
-        <NavLink to="/track" className="flex items-center gap-2">
-          <HiLocationMarker className={iconClass} /> Track Parcel
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to="/coverage" className="flex items-center gap-2">
-          <HiMap className={iconClass} /> Coverage
-        </NavLink>
-      </li>
       {user && (
         <li>
           <NavLink
@@ -47,10 +38,31 @@ const Navbar = () => {
         </li>
       )}
       <li>
+        <NavLink to="/track" className="flex items-center gap-2">
+          <HiLocationMarker className={iconClass} /> Track Parcel
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/coverage" className="flex items-center gap-2">
+          <HiMap className={iconClass} /> Coverage
+        </NavLink>
+      </li>
+
+      <li>
         <NavLink to="/send-parcel" className="flex items-center gap-2">
           <HiPaperAirplane className={iconClass} /> Send Parcel
         </NavLink>
       </li>
+      {user && (
+        <li>
+          <NavLink
+            to="/dashboard/beARaider"
+            className="flex items-center gap-2"
+          >
+            <HiOutlineIdentification className={iconClass} /> Be a Rider
+          </NavLink>
+        </li>
+      )}
     </>
   );
 
