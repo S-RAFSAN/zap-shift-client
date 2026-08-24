@@ -94,20 +94,30 @@ const Navbar = () => {
             {navItems}
           </ul>
         </div>
-        <ProFastLogo />
+        <p>
+          <Link to="/">
+            <span className="text-2xl font-bold">ParcelPilot</span>
+          </Link>
+        </p>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">{navItems}</ul>
       </div>
       <div className="navbar-end">
-        {user ? 
-        <button className="btn bg-[#C8E564] text-black hover:bg-[#b3d659] text-base px-4 rounded-full" onClick={handleLogout}>Logout</button>
-        :
-          <Link to="/login">
-          <button className="btn bg-[#C8E564] text-black hover:bg-[#b3d659] text-base px-4 rounded-full">
-            Login
+        {user ? (
+          <button
+            className="btn bg-[#C8E564] text-black hover:bg-[#b3d659] text-base px-4 rounded-full"
+            onClick={handleLogout}
+          >
+            Logout
           </button>
-        </Link>}
+        ) : (
+          <Link to="/login">
+            <button className="btn bg-[#C8E564] text-black hover:bg-[#b3d659] text-base px-4 rounded-full">
+              Login
+            </button>
+          </Link>
+        )}
       </div>
     </div>
   );

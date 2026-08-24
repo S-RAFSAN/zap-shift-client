@@ -83,7 +83,7 @@ const DeliveryStats = () => {
       {summaryEntries.length > 0 && (
         <section>
           <h2 className="text-xl font-bold mb-4">Overview</h2>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 xl:grid-cols-1 gap-6 items-start">
             <div className="flex flex-wrap gap-4">
               {summaryEntries.map(([key, count]) => (
                 <div className="stats shadow" key={key}>
@@ -96,7 +96,7 @@ const DeliveryStats = () => {
                 </div>
               ))}
             </div>
-            <div className="w-full h-80 min-h-[280px] rounded-xl bg-base-100 p-4 shadow">
+            <div className="w-full h-100 rounded-xl bg-base-100 p-4 shadow">
               {overviewPieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -158,7 +158,7 @@ const DeliveryStats = () => {
           ))}
         </div>
 
-        <div className="w-full h-[50vh] rounded-xl bg-base-100 p-4 shadow">
+        <div className="w-full h-100 rounded-xl bg-base-100 p-4 shadow">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
