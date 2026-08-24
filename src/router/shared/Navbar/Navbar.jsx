@@ -1,6 +1,5 @@
 import React from "react";
 import { Link, NavLink } from "react-router";
-import ProFastLogo from "./Profast/ProFastLogo";
 import useAuth from "../../../hooks/useAuth";
 
 import {
